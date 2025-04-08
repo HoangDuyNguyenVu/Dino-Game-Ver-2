@@ -1,30 +1,39 @@
-// Khai báo các đối tượng
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <cstdlib>
 #include <ctime>
 
+// Khai báo SDL
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 
+// Texture
 SDL_Texture* dinoTexture = nullptr;
 SDL_Texture* backgroundTexture = nullptr;
 SDL_Texture* obstacleTexture = nullptr;
 SDL_Texture* gameOverTexture = nullptr;
 SDL_Texture* startImageTexture = nullptr;
 
+// Âm thanh
+Mix_Music* bgMusic = nullptr;
+Mix_Chunk* hitSound = nullptr;
+
+// Vị trí nhân vật và vật thể
 SDL_Rect dinoRect;
 std::vector<SDL_Rect> obstacles;
 
+// Trạng thái game
 bool isJumping = false;
 int dinoVelocityY = 0;
 int score = 0;
 bool gameOver = false;
 bool gameStarted = false;
 
+// Thông số game
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 400;
 const int OBSTACLE_WIDTH = 50;
@@ -36,6 +45,7 @@ const int JUMP_VELOCITY = -13.6;
 const int GRAVITY = 1;
 const int OBSTACLE_SPEED = 6;
 
+// Hàm
 bool initSDL();
 SDL_Texture* loadTexture(const std::string& path);
 void closeSDL();
@@ -55,23 +65,20 @@ int main(int argc, char* argv[]) {
 }
 
 bool initSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
-    window = SDL_CreateWindow("Dino Game",
-                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              SCREEN_WIDTH, SCREEN_HEIGHT,
-                              SDL_WINDOW_SHOWN);
-
-    if (window == nullptr) {
+    window = SDL_CreateWindow("Dino Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    if (!window) {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == nullptr) {
+    if (!renderer) {
         std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -81,11 +88,25 @@ bool initSDL() {
         return false;
     }
 
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "SDL_mixer could not initialize! Mix_Error: " << Mix_GetError() << std::endl;
+        return false;
+    }
+
+    // Tải âm thanh và hình ảnh
     dinoTexture = loadTexture("dino.png");
     backgroundTexture = loadTexture("background.png");
     obstacleTexture = loadTexture("obstacle.png");
     gameOverTexture = loadTexture("gameover.png");
     startImageTexture = loadTexture("startscreen.png");
+
+    bgMusic = Mix_LoadMUS("bg_music.mp3");
+    hitSound = Mix_LoadWAV("hit.wav");
+
+    if (!bgMusic || !hitSound) {
+        std::cerr << "Failed to load sound! Mix_Error: " << Mix_GetError() << std::endl;
+        return false;
+    }
 
     dinoRect = { 50, SCREEN_HEIGHT - GROUND_Y, 60, 50 };
     srand(static_cast<unsigned int>(time(nullptr)));
@@ -95,20 +116,26 @@ bool initSDL() {
 
 SDL_Texture* loadTexture(const std::string& path) {
     SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
-    if (texture == nullptr) {
+    if (!texture) {
         std::cerr << "Failed to load texture: " << path << " SDL_Error: " << SDL_GetError() << std::endl;
     }
     return texture;
 }
 
 void closeSDL() {
+    Mix_FreeMusic(bgMusic);
+    Mix_FreeChunk(hitSound);
+
     SDL_DestroyTexture(dinoTexture);
     SDL_DestroyTexture(backgroundTexture);
     SDL_DestroyTexture(obstacleTexture);
     SDL_DestroyTexture(gameOverTexture);
     SDL_DestroyTexture(startImageTexture);
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+    Mix_Quit();
     IMG_Quit();
     SDL_Quit();
 }
@@ -136,6 +163,7 @@ void gameLoop() {
     SDL_Event e;
     obstacles.clear();
     spawnObstacle();
+    bool musicStarted = false;
 
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
@@ -154,8 +182,14 @@ void gameLoop() {
                     spawnObstacle();
                     isJumping = false;
                     dinoVelocityY = 0;
+                    Mix_PlayMusic(bgMusic, -1);
+
+                    if (!musicStarted) {
+                        Mix_PlayMusic(bgMusic, -1);
+                        musicStarted = true;
+                    }
                 } else if (gameOver && e.key.keysym.sym == SDLK_RETURN) {
-                    gameStarted = false; // Quay lại màn hình bắt đầu
+                    gameStarted = false;
                 } else if (e.key.keysym.sym == SDLK_SPACE && gameStarted && !gameOver && !isJumping) {
                     isJumping = true;
                     dinoVelocityY = JUMP_VELOCITY;
@@ -196,6 +230,8 @@ void gameLoop() {
                 SDL_Rect obsHitbox = { obs.x + 5, obs.y + 5, obs.w - 10, obs.h - 10 };
                 if (SDL_HasIntersection(&dinoHitbox, &obsHitbox)) {
                     gameOver = true;
+                    Mix_HaltMusic();
+                    Mix_PlayChannel(-1, hitSound, 0);
                 }
             }
         }
