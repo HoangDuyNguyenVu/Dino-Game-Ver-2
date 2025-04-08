@@ -2,6 +2,6 @@
 
 
      Name : Hoàng Nguyên Vũ
-       ° Project Game : Dino Game Ver 2 🙃
+       ° Project Game : Dino Game Ver 2 (Ver Capybara) 🙃
           
 
