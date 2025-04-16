@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <SDL_ttf.h>
 
 // Khai báo SDL
 SDL_Window* window = nullptr;
@@ -13,16 +14,20 @@ SDL_Renderer* renderer = nullptr;
 
 // Texture
 SDL_Texture* dinoTexture = nullptr;
+TTF_Font* font = nullptr;
+SDL_Color textColor = { 255, 255, 255, 255 }; // Màu Trắng
+int highScore = 0;
+int obstaclesCleared = 0;
 SDL_Texture* backgroundTexture = nullptr;
 SDL_Texture* obstacleTexture = nullptr;
 SDL_Texture* gameOverTexture = nullptr;
 SDL_Texture* startImageTexture = nullptr;
 
-// Âm thanh
+// Sound
 Mix_Music* bgMusic = nullptr;
 Mix_Chunk* hitSound = nullptr;
 
-// Vị trí nhân vật và vật thể
+// Character  và obstacle
 SDL_Rect dinoRect;
 std::vector<SDL_Rect> obstacles;
 
@@ -41,7 +46,7 @@ const int OBSTACLE_HEIGHT = 50;
 const int OBSTACLE_SPACING_MIN = 200;
 const int OBSTACLE_SPACING_MAX = 400;
 const int GROUND_Y = 120;
-const int JUMP_VELOCITY = -13.6;
+const int JUMP_VELOCITY = -14;
 const int GRAVITY = 1;
 const int OBSTACLE_SPEED = 6;
 
@@ -52,6 +57,7 @@ void closeSDL();
 void gameLoop();
 void spawnObstacle();
 void renderStartScreen();
+void renderText(const std::string& message, int x, int y); // <- Bổ sung khai báo hàm này
 
 int main(int argc, char* argv[]) {
     if (!initSDL()) {
@@ -93,7 +99,7 @@ bool initSDL() {
         return false;
     }
 
-    // Tải âm thanh và hình ảnh
+    // Load âm thanh và hình ảnh
     dinoTexture = loadTexture("dino.png");
     backgroundTexture = loadTexture("background.png");
     obstacleTexture = loadTexture("obstacle.png");
@@ -110,6 +116,17 @@ bool initSDL() {
 
     dinoRect = { 50, SCREEN_HEIGHT - GROUND_Y, 60, 50 };
     srand(static_cast<unsigned int>(time(nullptr)));
+
+    if (TTF_Init() == -1) {
+        std::cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError() << std::endl;
+        return false;
+    }
+
+    font = TTF_OpenFont("OpenSans-Regular.ttf", 12); // Giảm kích cỡ font nhỏ hơn 24
+    if (!font) {
+        std::cerr << "Failed to load font! TTF_Error: " << TTF_GetError() << std::endl;
+        return false;
+    }
 
     return true;
 }
@@ -138,6 +155,8 @@ void closeSDL() {
     Mix_Quit();
     IMG_Quit();
     SDL_Quit();
+    TTF_CloseFont(font);
+    TTF_Quit();
 }
 
 void spawnObstacle() {
@@ -145,6 +164,18 @@ void spawnObstacle() {
     int startX = obstacles.empty() ? SCREEN_WIDTH + spacing : obstacles.back().x + spacing;
     SDL_Rect newObstacle = { startX, SCREEN_HEIGHT - GROUND_Y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT };
     obstacles.push_back(newObstacle);
+}
+
+void renderText(const std::string& message, int x, int y) {
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, message.c_str(), textColor);
+    if (!textSurface) return;
+
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_Rect textRect = { x, y, textSurface->w, textSurface->h };
+
+    SDL_FreeSurface(textSurface);
+    SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
+    SDL_DestroyTexture(textTexture);
 }
 
 void renderStartScreen() {
@@ -155,6 +186,8 @@ void renderStartScreen() {
         SDL_Rect startRect = { SCREEN_WIDTH / 2 - 230, SCREEN_HEIGHT / 2 - 50, 500, 60 };
         SDL_RenderCopy(renderer, startImageTexture, nullptr, &startRect);
     }
+    renderText("Highscore: " + std::to_string(highScore), 10, 10);
+    renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
     SDL_RenderPresent(renderer);
 }
 
@@ -176,6 +209,7 @@ void gameLoop() {
                     gameStarted = true;
                     gameOver = false;
                     score = 0;
+                    obstaclesCleared = 0; // Reset điểm khi bắt đầu ván mới
                     dinoRect.x = 50;
                     dinoRect.y = SCREEN_HEIGHT - GROUND_Y;
                     obstacles.clear();
@@ -184,10 +218,6 @@ void gameLoop() {
                     dinoVelocityY = 0;
                     Mix_PlayMusic(bgMusic, -1);
 
-                    if (!musicStarted) {
-                        Mix_PlayMusic(bgMusic, -1);
-                        musicStarted = true;
-                    }
                 } else if (gameOver && e.key.keysym.sym == SDLK_RETURN) {
                     gameStarted = false;
                 } else if (e.key.keysym.sym == SDLK_SPACE && gameStarted && !gameOver && !isJumping) {
@@ -219,6 +249,11 @@ void gameLoop() {
             if (!obstacles.empty() && obstacles.front().x + OBSTACLE_WIDTH < 0) {
                 obstacles.erase(obstacles.begin());
                 score++;
+                obstaclesCleared++;
+
+                if (score > highScore) {
+                    highScore = score;
+                }
             }
 
             if (obstacles.empty() || obstacles.back().x < SCREEN_WIDTH - OBSTACLE_SPACING_MIN) {
@@ -247,6 +282,14 @@ void gameLoop() {
         if (gameOver) {
             SDL_Rect goRect = { SCREEN_WIDTH / 2 - 240, SCREEN_HEIGHT / 2 - 50, 500, 60 };
             SDL_RenderCopy(renderer, gameOverTexture, nullptr, &goRect);
+            // Hiển thị điểm kể cả khi game over
+            renderText("Highscore: " + std::to_string(highScore), 10, 10);
+            renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
+        }
+
+        if (gameStarted && !gameOver) {
+            renderText("Highscore: " + std::to_string(highScore), 10, 10);
+            renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
         }
 
         SDL_RenderPresent(renderer);
