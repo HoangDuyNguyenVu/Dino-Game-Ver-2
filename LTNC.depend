@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1740596786 source:c:\users\lenovo\documents\ltnc\main.cpp
+	<iostream>
+	<SDL.h>
+
+1740319781 source:c:\users\lenovo\documents\ltnc\test.cpp
+	<SDL.h>
+	<iostream>
+	<cstdlib>
+	<ctime>
+
+1740596152 source:c:\users\lenovo\documents\ltnc\khung.cpp
+	<iostream>
+	<SDL.h>
+
