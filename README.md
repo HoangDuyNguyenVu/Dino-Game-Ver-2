@@ -1,7 +1,7 @@
 # Dino Game Ver 2
 
-Tên: Hoàng Nguyên Vũ
-Mã sinh viên: 24022846
+- Tên: Hoàng Nguyên Vũ
+- Mã sinh viên: 24022846
 
 I. Giới thiệu:
 ![GameImage](Capybara.png)
