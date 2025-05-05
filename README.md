@@ -7,7 +7,7 @@ I. Giới thiệu:
 ![GameImage](Capybara.png)
 Đây là một trò chơi Endless Runner mô phỏng theo game khủng long của Chrome. Người chơi điều khiển Capybara nhảy để né chướng ngại vật càng lâu càng tốt.
 
-II. Ngưỡng điểm đề xuất: 8.0-8.5
+II. Ngưỡng điểm đề xuất: 8.0
 
 III. Lý do bảo vệ ngưỡng điểm:
 
