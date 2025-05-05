@@ -12,7 +12,8 @@ II. Ngưỡng điểm đề xuất: 8.5
 III. Lý do bảo vệ ngưỡng điểm:
 
 1. Có áp dụng thư viện SDL, SDL mixer và SDL image để vẽ đồ họa, xử lý âm thanh, sự kiện bàn phím.
-2. Trong game có :
+2. Có thêm các thuật toán tự tìm và học như thêm texture để hiện Score, thêm sound background hay âm thanh va chạm,...
+3. Trong game có :
    - Màn hình chờ
    - Game đang chạy
    - Game over
@@ -21,5 +22,5 @@ III. Lý do bảo vệ ngưỡng điểm:
 
    ![Score](Score.png)
 
-3. Có nhạc nền và hiệu ứng âm thanh (khi nhảy, khi thua).
-4. Có ý tưởng sáng tạo thay vì lấy nguyên dino thì lấy ý tưởng về capybara đang hot trend gần đây
+4. Có nhạc nền và hiệu ứng âm thanh (khi nhảy, khi thua).
+5. Có ý tưởng sáng tạo thay vì lấy nguyên dino thì lấy ý tưởng về capybara đang hot trend gần đây
