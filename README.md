@@ -18,6 +18,7 @@ III. Lý do bảo vệ ngưỡng điểm:
    - Game over
    - Có thể chơi lại bằng phím Enter, bắt đầu chơi bằng nút Space.
    - Có highscore và score đếm theo thời gian thực
+
 ![Score](Score.png)
 
 3. Có nhạc nền và hiệu ứng âm thanh (khi nhảy, khi thua).
