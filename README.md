@@ -19,7 +19,7 @@ III. Lý do bảo vệ ngưỡng điểm:
    - Có thể chơi lại bằng phím Enter, bắt đầu chơi bằng nút Space.
    - Có highscore và score đếm theo thời gian thực
 
-![Score](Score.png)
+   ![Score](Score.png)
 
 3. Có nhạc nền và hiệu ứng âm thanh (khi nhảy, khi thua).
 4. Có ý tưởng sáng tạo thay vì lấy nguyên dino thì lấy ý tưởng về capybara đang hot trend gần đây
