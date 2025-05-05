@@ -14,7 +14,10 @@ III. Lý do bảo vệ ngưỡng điểm:
 1. Có áp dụng thư viện SDL, SDL mixer và SDL image để vẽ đồ họa, xử lý âm thanh, sự kiện bàn phím.
 2. Có thêm các thuật toán tự tìm và học như thêm texture để hiện Score, thêm sound background hay âm thanh va chạm,...
 3. Có thêm hàm rand() tham khảo trên mạng để tạo khoảng cách random cho obstacles.
-4. Trong game có :
+
+![Hamrand](rand().png)
+
+5. Trong game có :
    - Màn hình chờ
    - Game đang chạy
    - Game over
@@ -23,5 +26,5 @@ III. Lý do bảo vệ ngưỡng điểm:
 
    ![Score](Score.png)
 
-5. Có nhạc nền và hiệu ứng âm thanh (khi nhảy, khi thua).
-6. Có ý tưởng sáng tạo thay vì lấy nguyên dino thì lấy ý tưởng về capybara đang hot trend gần đây
+6. Có nhạc nền và hiệu ứng âm thanh (khi nhảy, khi thua).
+7. Có ý tưởng sáng tạo thay vì lấy nguyên dino thì lấy ý tưởng về capybara đang hot trend gần đây
