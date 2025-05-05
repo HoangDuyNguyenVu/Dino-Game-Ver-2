@@ -1,12 +1,14 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <cstdlib>
 #include <ctime>
-#include <SDL_ttf.h>
+
+using namespace std;
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -25,7 +27,7 @@ Mix_Music* bgMusic = nullptr;
 Mix_Chunk* hitSound = nullptr;
 
 SDL_Rect dinoRect;
-std::vector<SDL_Rect> obstacles;
+vector<SDL_Rect> obstacles;
 
 bool isJumping = false;
 int dinoVelocityY = 0;
@@ -45,12 +47,12 @@ const int GRAVITY = 1;
 const int OBSTACLE_SPEED = 6;
 
 bool initSDL();
-SDL_Texture* loadTexture(const std::string& path);
+SDL_Texture* loadTexture(const string& path);
 void closeSDL();
 void gameLoop();
 void spawnObstacle();
 void renderStartScreen();
-void renderText(const std::string& message, int x, int y);
+void renderText(const string& message, int x, int y);
 
 int main(int argc, char* argv[]) {
     if (!initSDL()) {
@@ -63,28 +65,18 @@ int main(int argc, char* argv[]) {
 }
 
 bool initSDL() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        return false;
-    }
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) return false;
 
     window = SDL_CreateWindow("Dino Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                               SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    if (!window) {
-        return false;
-    }
+    if (!window) return false;
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
-        return false;
-    }
+    if (!renderer) return false;
 
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        return false;
-    }
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) return false;
 
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        return false;
-    }
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) return false;
 
     dinoTexture = loadTexture("dino.png");
     backgroundTexture = loadTexture("background.png");
@@ -95,26 +87,20 @@ bool initSDL() {
     bgMusic = Mix_LoadMUS("bg_music.mp3");
     hitSound = Mix_LoadWAV("hit.wav");
 
-    if (!bgMusic || !hitSound) {
-        return false;
-    }
+    if (!bgMusic || !hitSound) return false;
 
     dinoRect = { 50, SCREEN_HEIGHT - GROUND_Y, 60, 50 };
     srand(static_cast<unsigned int>(time(nullptr)));
 
-    if (TTF_Init() == -1) {
-        return false;
-    }
+    if (TTF_Init() == -1) return false;
 
     font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
-    if (!font) {
-        return false;
-    }
+    if (!font) return false;
 
     return true;
 }
 
-SDL_Texture* loadTexture(const std::string& path) {
+SDL_Texture* loadTexture(const string& path) {
     SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
     return texture;
 }
@@ -146,7 +132,7 @@ void spawnObstacle() {
     obstacles.push_back(newObstacle);
 }
 
-void renderText(const std::string& message, int x, int y) {
+void renderText(const string& message, int x, int y) {
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, message.c_str(), textColor);
     if (!textSurface) return;
 
@@ -166,8 +152,8 @@ void renderStartScreen() {
         SDL_Rect startRect = { SCREEN_WIDTH / 2 - 230, SCREEN_HEIGHT / 2 - 50, 500, 60 };
         SDL_RenderCopy(renderer, startImageTexture, nullptr, &startRect);
     }
-    renderText("Highscore: " + std::to_string(highScore), 10, 10);
-    renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
+    renderText("Highscore: " + to_string(highScore), 10, 10);
+    renderText("Obstacles cleared: " + to_string(obstaclesCleared), 10, 25);
     SDL_RenderPresent(renderer);
 }
 
@@ -261,13 +247,13 @@ void gameLoop() {
         if (gameOver) {
             SDL_Rect goRect = { SCREEN_WIDTH / 2 - 240, SCREEN_HEIGHT / 2 - 50, 500, 60 };
             SDL_RenderCopy(renderer, gameOverTexture, nullptr, &goRect);
-            renderText("Highscore: " + std::to_string(highScore), 10, 10);
-            renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
+            renderText("Highscore: " + to_string(highScore), 10, 10);
+            renderText("Obstacles cleared: " + to_string(obstaclesCleared), 10, 25);
         }
 
         if (gameStarted && !gameOver) {
-            renderText("Highscore: " + std::to_string(highScore), 10, 10);
-            renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
+            renderText("Highscore: " + to_string(highScore), 10, 10);
+            renderText("Obstacles cleared: " + to_string(obstaclesCleared), 10, 25);
         }
 
         SDL_RenderPresent(renderer);
