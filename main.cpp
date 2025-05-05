@@ -8,14 +8,12 @@
 #include <ctime>
 #include <SDL_ttf.h>
 
-// Khai báo SDL
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 
-// Texture
 SDL_Texture* dinoTexture = nullptr;
 TTF_Font* font = nullptr;
-SDL_Color textColor = { 255, 255, 255, 255 }; // Màu Trắng
+SDL_Color textColor = { 255, 255, 255, 255 };
 int highScore = 0;
 int obstaclesCleared = 0;
 SDL_Texture* backgroundTexture = nullptr;
@@ -23,22 +21,18 @@ SDL_Texture* obstacleTexture = nullptr;
 SDL_Texture* gameOverTexture = nullptr;
 SDL_Texture* startImageTexture = nullptr;
 
-// Sound
 Mix_Music* bgMusic = nullptr;
 Mix_Chunk* hitSound = nullptr;
 
-// Character  và obstacle
 SDL_Rect dinoRect;
 std::vector<SDL_Rect> obstacles;
 
-// Trạng thái game
 bool isJumping = false;
 int dinoVelocityY = 0;
 int score = 0;
 bool gameOver = false;
 bool gameStarted = false;
 
-// Thông số game
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 400;
 const int OBSTACLE_WIDTH = 50;
@@ -50,18 +44,16 @@ const int JUMP_VELOCITY = -14;
 const int GRAVITY = 1;
 const int OBSTACLE_SPEED = 6;
 
-// Hàm
 bool initSDL();
 SDL_Texture* loadTexture(const std::string& path);
 void closeSDL();
 void gameLoop();
 void spawnObstacle();
 void renderStartScreen();
-void renderText(const std::string& message, int x, int y); // <- Bổ sung khai báo hàm này
+void renderText(const std::string& message, int x, int y);
 
 int main(int argc, char* argv[]) {
     if (!initSDL()) {
-        std::cerr << "Failed to initialize SDL2!" << std::endl;
         return -1;
     }
 
@@ -72,34 +64,28 @@ int main(int argc, char* argv[]) {
 
 bool initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
     window = SDL_CreateWindow("Dino Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                               SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
-        std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        std::cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError() << std::endl;
         return false;
     }
 
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        std::cerr << "SDL_mixer could not initialize! Mix_Error: " << Mix_GetError() << std::endl;
         return false;
     }
 
-    // Load âm thanh và hình ảnh
     dinoTexture = loadTexture("dino.png");
     backgroundTexture = loadTexture("background.png");
     obstacleTexture = loadTexture("obstacle.png");
@@ -110,7 +96,6 @@ bool initSDL() {
     hitSound = Mix_LoadWAV("hit.wav");
 
     if (!bgMusic || !hitSound) {
-        std::cerr << "Failed to load sound! Mix_Error: " << Mix_GetError() << std::endl;
         return false;
     }
 
@@ -118,13 +103,11 @@ bool initSDL() {
     srand(static_cast<unsigned int>(time(nullptr)));
 
     if (TTF_Init() == -1) {
-        std::cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError() << std::endl;
         return false;
     }
 
-    font = TTF_OpenFont("OpenSans-Regular.ttf", 12); // Giảm kích cỡ font nhỏ hơn 24
+    font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
     if (!font) {
-        std::cerr << "Failed to load font! TTF_Error: " << TTF_GetError() << std::endl;
         return false;
     }
 
@@ -133,9 +116,6 @@ bool initSDL() {
 
 SDL_Texture* loadTexture(const std::string& path) {
     SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
-    if (!texture) {
-        std::cerr << "Failed to load texture: " << path << " SDL_Error: " << SDL_GetError() << std::endl;
-    }
     return texture;
 }
 
@@ -209,7 +189,7 @@ void gameLoop() {
                     gameStarted = true;
                     gameOver = false;
                     score = 0;
-                    obstaclesCleared = 0; // Reset điểm khi bắt đầu ván mới
+                    obstaclesCleared = 0;
                     dinoRect.x = 50;
                     dinoRect.y = SCREEN_HEIGHT - GROUND_Y;
                     obstacles.clear();
@@ -217,7 +197,6 @@ void gameLoop() {
                     isJumping = false;
                     dinoVelocityY = 0;
                     Mix_PlayMusic(bgMusic, -1);
-
                 } else if (gameOver && e.key.keysym.sym == SDLK_RETURN) {
                     gameStarted = false;
                 } else if (e.key.keysym.sym == SDLK_SPACE && gameStarted && !gameOver && !isJumping) {
@@ -282,7 +261,6 @@ void gameLoop() {
         if (gameOver) {
             SDL_Rect goRect = { SCREEN_WIDTH / 2 - 240, SCREEN_HEIGHT / 2 - 50, 500, 60 };
             SDL_RenderCopy(renderer, gameOverTexture, nullptr, &goRect);
-            // Hiển thị điểm kể cả khi game over
             renderText("Highscore: " + std::to_string(highScore), 10, 10);
             renderText("Obstacles cleared: " + std::to_string(obstaclesCleared), 10, 25);
         }
